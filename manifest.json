@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Meta Catalog API Stock Exporter",
+  "version": "2.0.0",
+  "description": "Official Meta Graph API Chrome Extension to export catalog inventory stock (Out of Stock / In Stock / All) into RFC-4180 CSV safely.",
+  "permissions": [
+    "storage",
+    "downloads",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://graph.facebook.com/*",
+    "https://business.facebook.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "Meta Catalog API Stock Exporter"
+  },
+  "background": {
+    "service_worker": "background.js"
+  }
+}

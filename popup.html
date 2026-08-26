@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meta Catalog API Stock Exporter</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="brand">
+      <div class="brand-icon">M</div>
+      <h1 class="brand-title">Meta Graph API Exporter</h1>
+    </div>
+    <div id="statusBadge" class="status-badge">Idle</div>
+  </header>
+
+  <!-- Meta Credentials Section -->
+  <section class="card">
+    <div class="card-title">
+      <span>🔑 Meta API Authentication</span>
+      <button id="btnTestToken" class="btn btn-secondary" style="padding: 3px 8px; font-size: 10px;">Test Token</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="txtAccessToken">Business / System User Access Token</label>
+      <div class="input-wrapper">
+        <input type="password" id="txtAccessToken" class="input-field" placeholder="EAA..." autocomplete="off">
+        <button id="btnToggleToken" class="btn btn-secondary" style="padding: 4px 8px;" title="Show/Hide Token">👁️</button>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="txtCatalogId">Commerce Catalog ID</label>
+      <div class="input-wrapper">
+        <input type="text" id="txtCatalogId" class="input-field" placeholder="e.g. 589533033640483">
+        <button id="btnAutoDetect" class="btn btn-secondary" style="padding: 4px 8px; font-size: 10px; white-space: nowrap;">Auto Detect</button>
+      </div>
+      <select id="selCatalogs" class="input-field" style="display: none; margin-top: 6px;">
+        <option value="">-- Select Detected Catalog --</option>
+      </select>
+    </div>
+  </section>
+
+  <!-- Export Settings Card -->
+  <section class="card">
+    <div class="card-title">⚙️ Export Settings & Production Safety Mode</div>
+    <div class="settings-grid">
+      <div class="form-group">
+        <label class="form-label" for="selAvailability">Availability Filter</label>
+        <select id="selAvailability" class="input-field">
+          <option value="out_of_stock" selected>Out of Stock Only</option>
+          <option value="in_stock">In Stock Only</option>
+          <option value="all">All Catalog Products</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="selDelay">Base Request Delay</label>
+        <select id="selDelay" class="input-field">
+          <option value="200">200 ms (Fast)</option>
+          <option value="300" selected>300 ms (Recommended)</option>
+          <option value="400">400 ms (Safe)</option>
+          <option value="500">500 ms (Ultra Safe)</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <!-- Meta Graph API Rate Limit Bar -->
+  <section class="rate-limit-card">
+    <div class="rate-header">
+      <span>Adaptive Rate Limit Usage</span>
+      <span id="rateLimitText">0% (Normal)</span>
+    </div>
+    <div class="rate-track">
+      <div id="rateLimitFill" class="rate-fill"></div>
+    </div>
+  </section>
+
+  <!-- Statistics Grid -->
+  <section class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-label">API Requests Sent</span>
+      <span id="requestStats" class="stat-value">0</span>
+      <span id="requestSub" class="stat-sub">Dynamic cursor paging</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-label">Products Exported</span>
+      <span id="productStats" class="stat-value">0</span>
+      <span id="etaStats" class="stat-sub">ETA: --</span>
+    </div>
+  </section>
+
+  <!-- Progress Bar Section -->
+  <section class="progress-container">
+    <div class="progress-header">
+      <span>Catalog Export Progress</span>
+      <span id="progressPercent">0%</span>
+    </div>
+    <div class="progress-track">
+      <div id="progressFill" class="progress-fill"></div>
+    </div>
+  </section>
+
+  <!-- Main Controls -->
+  <section class="controls-grid">
+    <button id="btnStart" class="btn btn-primary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      Start API Export
+    </button>
+    <button id="btnPause" class="btn btn-warning" disabled>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+      Pause
+    </button>
+    <button id="btnResume" class="btn btn-primary" style="display: none;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      Resume
+    </button>
+    <button id="btnStop" class="btn btn-danger" disabled>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+      Stop
+    </button>
+  </section>
+
+  <!-- Secondary Actions -->
+  <section class="secondary-actions">
+    <button id="btnDownload" class="btn btn-success" disabled>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>
+      Download Catalog CSV
+    </button>
+    <button id="btnClear" class="btn btn-secondary">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+      Clear Data
+    </button>
+  </section>
+
+  <!-- Stock Mismatch Reconciliation Card -->
+  <section class="card" style="border: 1px solid rgba(6, 182, 212, 0.3); background-color: #0c1524;">
+    <div class="card-title" style="color: #38bdf8;">
+      <span>📊 EC Portal Stock Mismatch Tool</span>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="fileLaravelCSV">Upload Laravel Inventory CSV (EC Portal)</label>
+      <input type="file" id="fileLaravelCSV" accept=".csv, .txt" class="input-field">
+    </div>
+    <button id="btnCompareStock" class="btn btn-primary" style="width: 100%; margin-top: 4px; background: linear-gradient(135deg, #0284c7, #06b6d4);" disabled>
+      🔍 Compare & Generate Mismatch Report CSV
+    </button>
+  </section>
+
+  <!-- Activity & Console Log Panel -->
+  <section class="log-panel">
+    <div class="log-header">
+      <span>Activity Console</span>
+      <span id="logCount">0 events</span>
+    </div>
+    <div id="logFeed" class="log-feed">
+      <div class="log-entry info"><span class="time">--:--:--</span>Ready. Enter Access Token & Catalog ID.</div>
+    </div>
+  </section>
+
+  <script src="db.js"></script>
+  <script src="api.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
